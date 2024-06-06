@@ -1,3 +1,3 @@
 export default function Home() {
-  return <main>Elba x Hubspot</main>;
+  return <main>Please enter /install</main>;
 }
