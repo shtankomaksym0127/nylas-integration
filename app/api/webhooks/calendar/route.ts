@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-
 import crypto from "crypto";
+import { extractTopLevelProperties } from "@/utils/extract";
 
 const WEBHOOK_SECRET = process.env.NEXT_PUBLIC_NYLAS_WEBHOOK_SECRET; // Ensure this is set in your environment variables
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const body = await request.text(); // Get the raw request body
-  console.log("body:", body);
   const signature = request.headers.get("x-nylas-signature");
 
   if (!signature || !WEBHOOK_SECRET) {
@@ -14,14 +13,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       status: 401,
     });
   }
-  console.log("signature:", signature);
 
   // Verify the signature
   const hash = crypto
     .createHmac("sha256", WEBHOOK_SECRET)
     .update(body)
     .digest("hex");
-  
+
   console.log("hash:", hash);
 
   // if (hash !== signature) {
@@ -32,8 +30,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   // Process the webhook event
   const event = JSON.parse(body);
-  console.log("event:", event);
 
+  let sendData = null;
+  if (event.type === "event.created") {
+    sendData = event.data;
+    console.log("event.created sendData:", sendData);
+    sendData = { ...sendData, type: event.type };
+  }
   if (!process.env.NEXT_PUBLIC_GOOGLE_SHEETS_WEBHOOK_URL) {
     return new NextResponse("Invalid googesheet webhook url", {
       status: 404,
@@ -47,11 +50,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(event),
+      body: JSON.stringify(await extractTopLevelProperties(event)),
     }
   );
-  console.log("googlesheet response.ok:", response.ok);
-
 
   if (!response.ok) {
     console.error("Failed to send data to Google Sheets:", response.statusText);
