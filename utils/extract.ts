@@ -1,3 +1,12 @@
+const formatDate = (time: any) => {
+  const timestamp = parseInt(time, 10) * 1000; // Convert to milliseconds
+  const date = new Date(timestamp);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 export const extractTopLevelProperties = async (
   obj: any,
   parentKey: string = "",
@@ -13,10 +22,18 @@ export const extractTopLevelProperties = async (
       ) {
         extractTopLevelProperties(obj[key], newKey, result);
       } else {
-        result[newKey] = obj[key];
+        if (newKey === "start_time" || newKey === "end_time") {
+          result[key] = formatDate(obj[key]);
+        } else {
+          result[newKey] = obj[key];
+        }
       }
     } else {
-      result[key] = obj[key];
+      if (key === "time") {
+        result[key] = formatDate(obj[key]);
+      } else {
+        result[key] = obj[key];
+      }
     }
   }
   return result;
