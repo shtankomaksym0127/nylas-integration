@@ -13,6 +13,7 @@ export const extractTopLevelProperties = async (
   result: any = {}
 ) => {
   for (let key in obj) {
+    console.log("key:", key);
     if (obj.hasOwnProperty(key)) {
       const newKey = parentKey ? `${parentKey}.${key}` : key;
       if (
@@ -22,19 +23,16 @@ export const extractTopLevelProperties = async (
       ) {
         extractTopLevelProperties(obj[key], newKey, result);
       } else {
-        if (newKey === "start_time" || newKey === "end_time") {
-          result[key] = formatDate(obj[key]);
+        console.log("key1:", newKey);
+      console.log("typeof key1:", typeof(newKey));
+        if (newKey === "data.object.created_at" || newKey === "data.object.updated_at" || newKey === "time" || newKey === "data.object.when.end_time" || newKey === "data.object.when.start_time") {
+          result[newKey] = formatDate(obj[key]);
+          console.log("formatedDate start_time:", result[key]);
         } else {
           result[newKey] = obj[key];
         }
       }
-    } else {
-      if (key === "time") {
-        result[key] = formatDate(obj[key]);
-      } else {
-        result[key] = obj[key];
-      }
-    }
+    } 
   }
   return result;
 };
