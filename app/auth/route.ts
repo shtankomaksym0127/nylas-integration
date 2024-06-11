@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Authorization code is missing' }, { status: 400 });
   }
 
-  // await setupOrganisation({ code });
+  await setupOrganisation({ code });
 
   redirect(process.env.NEXT_PUBLIC_MY_REDIRECT_URL as string, RedirectType.replace);
 }

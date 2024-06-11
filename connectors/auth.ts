@@ -6,6 +6,7 @@ const tokenResponseSchema = z.object({
 });
 
 export const getToken = async (code: string) => {
+  console.log("code:", code);
   const response = await fetch(`https://api.eu.nylas.com/v3/connect/token`, {
     method: "POST",
     headers: {
