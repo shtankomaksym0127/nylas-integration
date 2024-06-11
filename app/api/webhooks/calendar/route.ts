@@ -7,6 +7,7 @@ const WEBHOOK_SECRET = process.env.NEXT_PUBLIC_NYLAS_WEBHOOK_SECRET; // Ensure t
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const body = await request.text(); // Get the raw request body
   const signature = request.headers.get("x-nylas-signature");
+  console.log("signature:", signature);
 
   if (!signature || !WEBHOOK_SECRET) {
     return new NextResponse("Unauthorized", {
@@ -42,6 +43,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       status: 404,
     });
   }
+  const send = await extractTopLevelProperties(event);
+  console.log("send:", send);
   // Send the webhook data to Google Sheets
   const response = await fetch(
     process.env.NEXT_PUBLIC_GOOGLE_SHEETS_WEBHOOK_URL,
@@ -50,7 +53,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(await extractTopLevelProperties(event)),
+      body: JSON.stringify(send),
     }
   );
 
@@ -71,8 +74,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   // Extract the challenge query parameter from the request URL
   const url = new URL(request.url);
   const challenge = url.searchParams.get("challenge");
-  const body = await request.text(); // Get the raw request body
-  console.log("body:", body);
+  // const body = await request.text(); // Get the raw request body
   console.log("challenge:", challenge);
   // Return the challenge parameter value in the response body
   if (challenge) {
